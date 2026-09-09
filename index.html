@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Morning Launchpad — Cast Receiver</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Quicksand:wght@500;600;700&display=swap');
+
+  :root{
+    --bg-deep:#241c47;
+    --bg-glow:#382b63;
+    --surface:#392e64;
+    --surface-hi:#473a78;
+    --hairline:#524384;
+    --text-hi:#fdf7ec;
+    --text-mid:#c6bce8;
+    --text-dim:#8c81b3;
+    --sun:#ffb238;
+    --sun-soft:#ffd98c;
+    --calm:#4fd1b3;
+    --warn:#ffb238;
+    --crit:#ff6f6f;
+    --badge-teeth:#7fd8d1;
+    --badge-shirt:#f2a86f;
+    --badge-food:#f2d16b;
+    --badge-pack:#9ab8f2;
+    --badge-shoe:#e29ad0;
+    --kid-bronson:#6fb1f2;
+    --kid-bruce:#f2946f;
+    --kid-cheryl:#c9a0f2;
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(60% 50% at 82% -6%, #4a3a80 0%, transparent 60%),
+      radial-gradient(45% 40% at 8% 108%, #2f2758 0%, transparent 55%),
+      var(--bg-deep);
+    color:var(--text-hi);
+    font-family:'Quicksand', 'Segoe UI', sans-serif;
+    min-height:100vh;
+    overflow-x:hidden;
+  }
+
+  .stage{
+    max-width:1400px;
+    margin:0 auto;
+    padding:2.6vh 3.2vw 3.2vh;
+    display:flex;
+    flex-direction:column;
+    gap:2.4vh;
+    min-height:100vh;
+  }
+
+  /* ---- top bar ---- */
+  .topbar{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-end;
+    gap:2rem;
+  }
+  .greeting-eyebrow{
+    font-size:clamp(0.85rem, 1.1vw, 1.05rem);
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    color:var(--sun-soft);
+    font-weight:600;
+    margin:0 0 0.35rem;
+  }
+  .greeting{
+    font-family:'Fredoka', sans-serif;
+    font-weight:600;
+    font-size:clamp(1.8rem, 3.4vw, 2.7rem);
+    margin:0;
+    text-wrap:balance;
+  }
+  .date-line{
+    margin:0.3rem 0 0;
+    color:var(--text-mid);
+    font-size:clamp(1rem, 1.3vw, 1.2rem);
+    font-weight:600;
+  }
+  .clock{
+    font-family:'Fredoka', sans-serif;
+    font-weight:600;
+    font-size:clamp(3rem, 7vw, 5.6rem);
+    line-height:1;
+    font-variant-numeric:tabular-nums;
+    text-align:right;
+    white-space:nowrap;
+  }
+  .clock small{
+    font-size:0.38em;
+    color:var(--text-mid);
+    margin-left:0.3rem;
+    font-family:'Quicksand', sans-serif;
+    font-weight:700;
+  }
+
+  /* ---- countdown band ---- */
+  .countdown{
+    background:var(--surface);
+    border:1px solid var(--hairline);
+    border-radius:28px;
+    padding:clamp(1.2rem, 2.4vw, 2rem) clamp(1.4rem, 3vw, 2.6rem);
+    display:flex;
+    flex-wrap:wrap;
+    align-items:center;
+    justify-content:center;
+    gap:clamp(1.2rem, 3vw, 2.6rem);
+    position:relative;
+    transition:border-color 0.4s ease;
+  }
+  .countdown.state-warn{border-color:color-mix(in srgb, var(--warn) 55%, var(--hairline));}
+  .countdown.state-crit{border-color:color-mix(in srgb, var(--crit) 65%, var(--hairline)); animation:pulseBorder 1.6s ease-in-out infinite;}
+  @keyframes pulseBorder{
+    0%,100%{box-shadow:0 0 0 rgba(255,111,111,0);}
+    50%{box-shadow:0 0 0 8px rgba(255,111,111,0.08);}
+  }
+
+  .countdown-label{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:0.3rem;
+    flex:1 1 140px;
+    text-align:center;
+  }
+  .countdown-label .eyebrow{
+    font-size:clamp(0.78rem, 1vw, 0.95rem);
+    letter-spacing:0.12em;
+    text-transform:uppercase;
+    color:var(--text-mid);
+    font-weight:700;
+  }
+  .countdown-label .dest{
+    font-family:'Fredoka', sans-serif;
+    font-size:clamp(1.15rem, 1.7vw, 1.5rem);
+    font-weight:500;
+  }
+
+  .dial-wrap{
+    position:relative;
+    width:clamp(200px, 24vw, 300px);
+    height:clamp(200px, 24vw, 300px);
+    flex:0 0 auto;
+  }
+  .dial-face{
+    width:100%;
+    height:100%;
+    display:block;
+    overflow:visible;
+  }
+  .dial-ring{
+    fill:var(--bg-deep);
+    stroke:var(--hairline);
+    stroke-width:3;
+  }
+  .dial-tick{
+    stroke:var(--hairline);
+    stroke-width:2.5;
+    stroke-linecap:round;
+  }
+  .dial-wedge{
+    fill:var(--sun);
+    transition:fill 0.4s ease;
+  }
+  .countdown.state-warn .dial-wedge{fill:var(--warn);}
+  .countdown.state-crit .dial-wedge{fill:var(--crit);}
+  .dial-hub{fill:var(--text-hi);}
+
+  .dial-center{
+    position:absolute;
+    inset:0;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:0.2rem;
+    pointer-events:none;
+    text-align:center;
+  }
+  .dial-time{
+    font-family:'Fredoka', sans-serif;
+    font-weight:600;
+    font-size:clamp(2rem, 4.6vw, 3.1rem);
+    font-variant-numeric:tabular-nums;
+    color:var(--text-hi);
+    line-height:1;
+  }
+  .track-caption{
+    font-size:clamp(0.72rem, 0.95vw, 0.85rem);
+    color:var(--text-mid);
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:0.06em;
+    max-width:70%;
+  }
+
+  .leave-time-adjust{
+    flex:1 1 140px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:0.3rem;
+  }
+  .leave-time-adjust label{
+    font-size:0.72rem;
+    letter-spacing:0.1em;
+    text-transform:uppercase;
+    color:var(--text-dim);
+    font-weight:700;
+  }
+  .leave-time-adjust input{
+    background:var(--bg-deep);
+    border:1px solid var(--hairline);
+    border-radius:10px;
+    color:var(--text-hi);
+    font-family:'Quicksand', sans-serif;
+    font-weight:700;
+    font-size:0.95rem;
+    padding:0.35rem 0.5rem;
+    accent-color:var(--sun);
+  }
+  .leave-time-adjust input:focus-visible{outline:2px solid var(--sun); outline-offset:2px;}
+  .leave-time-adjust .hint{
+    font-size:0.68rem;
+    color:var(--text-dim);
+  }
+
+  /* ---- tasks ---- */
+  .tasks-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    gap:1rem;
+  }
+  .tasks-title{
+    font-family:'Fredoka', sans-serif;
+    font-weight:600;
+    font-size:clamp(1.3rem, 2vw, 1.8rem);
+    margin:0;
+  }
+  .tasks-progress-chip{
+    background:var(--surface-hi);
+    border-radius:999px;
+    padding:0.4rem 1rem;
+    font-weight:700;
+    font-size:clamp(0.85rem, 1.1vw, 1rem);
+    color:var(--sun-soft);
+    font-variant-numeric:tabular-nums;
+    white-space:nowrap;
+  }
+
+  .kids-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(260px, 1fr));
+    gap:clamp(0.9rem, 1.6vw, 1.4rem);
+    flex:1 1 auto;
+  }
+
+  .kid-card{
+    background:var(--surface);
+    border:1px solid var(--hairline);
+    border-radius:24px;
+    padding:clamp(1rem, 1.6vw, 1.4rem);
+    display:flex;
+    flex-direction:column;
+    gap:clamp(0.6rem, 1vw, 0.9rem);
+  }
+
+  .kid-header{
+    display:flex;
+    align-items:center;
+    gap:0.8rem;
+    border-bottom:1px solid var(--hairline);
+    padding-bottom:clamp(0.6rem, 1vw, 0.9rem);
+  }
+  .kid-avatar{
+    width:clamp(40px, 4.5vw, 52px);
+    height:clamp(40px, 4.5vw, 52px);
+    border-radius:50%;
+    flex:0 0 auto;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-family:'Fredoka', sans-serif;
+    font-weight:600;
+    font-size:clamp(1.1rem, 1.6vw, 1.4rem);
+    color:var(--bg-deep);
+  }
+  .kid-name{
+    font-family:'Fredoka', sans-serif;
+    font-weight:600;
+    font-size:clamp(1.15rem, 1.7vw, 1.45rem);
+    flex:1 1 auto;
+  }
+  .kid-progress{
+    font-weight:700;
+    font-size:clamp(0.8rem, 1vw, 0.92rem);
+    color:var(--text-dim);
+    font-variant-numeric:tabular-nums;
+    white-space:nowrap;
+  }
+  .kid-progress.all-done{color:var(--calm);}
+
+  .kid-tasklist{
+    display:flex;
+    flex-direction:column;
+    gap:clamp(0.4rem, 0.8vw, 0.6rem);
+  }
+
+  .task-row{
+    display:flex;
+    align-items:center;
+    gap:0.75rem;
+    padding:clamp(0.55rem, 1vw, 0.75rem) clamp(0.6rem, 1vw, 0.8rem);
+    border-radius:14px;
+    cursor:pointer;
+    -webkit-tap-highlight-color:transparent;
+    user-select:none;
+    transition:background 0.25s ease;
+  }
+  .task-row:hover{background:var(--surface-hi);}
+  .task-row:active{transform:scale(0.99);}
+  .task-row:focus-visible{outline:3px solid var(--sun); outline-offset:2px;}
+
+  .task-checkbox{
+    width:clamp(24px, 2.6vw, 30px);
+    height:clamp(24px, 2.6vw, 30px);
+    border-radius:8px;
+    border:2px solid var(--hairline);
+    background:var(--bg-deep);
+    flex:0 0 auto;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    transition:background 0.25s ease, border-color 0.25s ease;
+  }
+  .task-checkbox svg{
+    width:65%;
+    height:65%;
+    stroke:var(--bg-deep);
+    stroke-width:3;
+    fill:none;
+    stroke-linecap:round;
+    stroke-linejoin:round;
+    opacity:0;
+    transition:opacity 0.15s ease;
+  }
+
+  .task-icon-badge{
+    width:clamp(30px, 3.2vw, 38px);
+    height:clamp(30px, 3.2vw, 38px);
+    border-radius:50%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex:0 0 auto;
+  }
+  .task-icon-badge svg{
+    width:58%;
+    height:58%;
+    stroke:var(--bg-deep);
+    stroke-width:2.6;
+    fill:none;
+    stroke-linecap:round;
+    stroke-linejoin:round;
+  }
+
+  .task-label{
+    font-family:'Quicksand', sans-serif;
+    font-weight:600;
+    font-size:clamp(0.95rem, 1.2vw, 1.1rem);
+    transition:color 0.3s ease, opacity 0.3s ease;
+    flex:1 1 auto;
+  }
+
+  .task-row.done .task-checkbox{background:var(--calm); border-color:var(--calm);}
+  .task-row.done .task-checkbox svg{opacity:1;}
+  .task-row.done .task-label{color:var(--text-dim); text-decoration:line-through; text-decoration-color:var(--calm); text-decoration-thickness:2px; opacity:0.75;}
+
+  .task-row.bounce{animation:bounce 0.38s ease;}
+  @keyframes bounce{
+    0%{transform:scale(1);}
+    35%{transform:scale(1.025);}
+    100%{transform:scale(1);}
+  }
+
+  /* ---- footer banner ---- */
+  .banner{
+    text-align:center;
+    font-family:'Fredoka', sans-serif;
+    font-weight:500;
+    font-size:clamp(1.1rem, 1.8vw, 1.5rem);
+    padding:0.9rem 1rem;
+    border-radius:18px;
+    background:var(--surface-hi);
+    color:var(--sun-soft);
+    transition:background 0.4s ease, color 0.4s ease;
+  }
+  .banner.ready{background:color-mix(in srgb, var(--calm) 22%, var(--surface-hi)); color:var(--calm);}
+  .banner.crit{background:color-mix(in srgb, var(--crit) 20%, var(--surface-hi)); color:#ffb3b3;}
+
+  .conn-pill{
+    position:absolute;
+    top:10px;
+    right:16px;
+    font-size:0.68rem;
+    font-weight:700;
+    letter-spacing:0.06em;
+    text-transform:uppercase;
+    color:var(--text-dim);
+    background:var(--surface-hi);
+    border-radius:999px;
+    padding:0.2rem 0.6rem;
+  }
+
+  @media (max-width: 640px){
+    .topbar{flex-direction:column; align-items:flex-start;}
+    .clock{text-align:left;}
+    .countdown{flex-wrap:wrap;}
+    .leave-time-adjust{align-items:center;}
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .countdown.state-crit{animation:none;}
+    .task-row.bounce{animation:none;}
+    .task-row{transition:none;}
+  }
+</style>
+</head>
+<body>
+
+<div class="stage">
+  <span class="conn-pill" id="connPill">Waiting for phone…</span>
+  <div class="topbar">
+    <div>
+      <p class="greeting-eyebrow">Rise and shine</p>
+      <h1 class="greeting" id="greeting">Good morning, crew!</h1>
+      <p class="date-line" id="dateLine">&nbsp;</p>
+    </div>
+    <div class="clock" id="clock">--:-- <small>--</small></div>
+  </div>
+
+  <div class="countdown" id="countdownBand">
+    <div class="countdown-label">
+      <span class="eyebrow">Leaving for</span>
+      <span class="dest">School bus stop</span>
+    </div>
+    <div class="dial-wrap">
+      <svg class="dial-face" viewBox="0 0 200 200" aria-hidden="true">
+        <circle class="dial-ring" cx="100" cy="100" r="92"></circle>
+        <g class="dial-ticks" id="dialTicks"></g>
+        <path class="dial-wedge" id="dialWedge" d=""></path>
+        <circle class="dial-hub" cx="100" cy="100" r="4"></circle>
+      </svg>
+      <div class="dial-center">
+        <div class="dial-time" id="countdownTime">--:--</div>
+        <span class="track-caption" id="trackCaption">until leaving</span>
+      </div>
+    </div>
+    <div class="leave-time-adjust">
+      <label for="leaveTimeInput">Leave time</label>
+      <input type="time" id="leaveTimeInput" />
+      <span class="hint">set from the phone app</span>
+    </div>
+  </div>
+
+  <div class="tasks-header">
+    <h2 class="tasks-title">Get-ready checklist</h2>
+    <span class="tasks-progress-chip" id="progressChip">0 of 15 done</span>
+  </div>
+
+  <div class="kids-grid" id="kidsGrid"></div>
+
+  <div class="banner" id="banner">Waiting for the Morning Launchpad app to connect…</div>
+</div>
+
+<script>
+(function(){
+  var TASKS = [
+    { id:'teeth', label:'Brush teeth', color:'var(--badge-teeth)', icon:
+      '<svg viewBox="0 0 24 24"><path d="M4 3l14 3-1 6c-.4 3-2 6-5 6s-4-2-4.5-4.5S7 9 5 8L4 3z"/><circle cx="9" cy="6.4" r="0.6" fill="var(--bg-deep)" stroke="none"/><circle cx="12.4" cy="7.1" r="0.6" fill="var(--bg-deep)" stroke="none"/><circle cx="15.8" cy="7.8" r="0.6" fill="var(--bg-deep)" stroke="none"/></svg>' },
+    { id:'dressed', label:'Get dressed', color:'var(--badge-shirt)', icon:
+      '<svg viewBox="0 0 24 24"><path d="M9 3l3 2 3-2 4 3-2 3-2-1v10H8V8L6 9 4 6l5-3z"/></svg>' },
+    { id:'breakfast', label:'Eat breakfast', color:'var(--badge-food)', icon:
+      '<svg viewBox="0 0 24 24"><path d="M4 11a8 8 0 0 1 16 0z"/><path d="M3 11h18"/><path d="M6 15c0 3 2.5 5 6 5s6-2 6-5"/></svg>' },
+    { id:'backpack', label:'Pack backpack', color:'var(--badge-pack)', icon:
+      '<svg viewBox="0 0 24 24"><rect x="6" y="8" width="12" height="12" rx="3"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/><path d="M9 13h6"/><path d="M12 13v5"/></svg>' },
+    { id:'shoes', label:'Put on shoes', color:'var(--badge-shoe)', icon:
+      '<svg viewBox="0 0 24 24"><path d="M3 17c0-2 1.5-3 3-3l3-4 3 1c2 .7 4 1 7 1v3c0 1.1-.9 2-2 2H4c-.6 0-1-.4-1-1z"/></svg>' }
+  ];
+
+  var CHECK_ICON = '<svg viewBox="0 0 24 24"><path d="M4 12l6 6L20 6"/></svg>';
+
+  var KIDS = [
+    { id:'bronson', name:'Bronson', color:'var(--kid-bronson)' },
+    { id:'bruce', name:'Bruce', color:'var(--kid-bruce)' },
+    { id:'cheryl', name:'Cheryl', color:'var(--kid-cheryl)' }
+  ];
+
+  var todayKey = new Date().toDateString();
+  var STORAGE_DONE = 'launchpad.done.' + todayKey;
+  var STORAGE_LEAVE = 'launchpad.leave.' + todayKey;
+  var STORAGE_TOTAL = 'launchpad.total.' + todayKey;
+
+  function safeGet(key){ try{ return localStorage.getItem(key); }catch(e){ return null; } }
+  function safeSet(key, val){ try{ localStorage.setItem(key, val); }catch(e){} }
+
+  var done = {};
+  try{ done = JSON.parse(safeGet(STORAGE_DONE) || '{}'); }catch(e){ done = {}; }
+  KIDS.forEach(function(k){ if(!done[k.id]) done[k.id] = {}; });
+
+  var totalTaskCount = KIDS.length * TASKS.length;
+  var kidsGrid = document.getElementById('kidsGrid');
+  var rowRefs = {};
+  var progressRefs = {};
+
+  KIDS.forEach(function(kid){
+    rowRefs[kid.id] = {};
+
+    var card = document.createElement('div');
+    card.className = 'kid-card';
+
+    var header = document.createElement('div');
+    header.className = 'kid-header';
+    header.innerHTML =
+      '<div class="kid-avatar" style="background:' + kid.color + '">' + kid.name.charAt(0) + '</div>' +
+      '<div class="kid-name">' + kid.name + '</div>';
+    var progressEl = document.createElement('div');
+    progressEl.className = 'kid-progress';
+    header.appendChild(progressEl);
+    card.appendChild(header);
+    progressRefs[kid.id] = progressEl;
+
+    var list = document.createElement('div');
+    list.className = 'kid-tasklist';
+
+    TASKS.forEach(function(t){
+      var row = document.createElement('div');
+      var isDone = !!done[kid.id][t.id];
+      row.className = 'task-row' + (isDone ? ' done' : '');
+      row.tabIndex = 0;
+      row.setAttribute('role','checkbox');
+      row.setAttribute('aria-checked', isDone ? 'true' : 'false');
+      row.innerHTML =
+        '<div class="task-checkbox">' + CHECK_ICON + '</div>' +
+        '<div class="task-icon-badge" style="background:' + t.color + '">' + t.icon + '</div>' +
+        '<div class="task-label">' + t.label + '</div>';
+      function toggle(){ applyToggle(kid.id, t.id, true); }
+      row.addEventListener('click', toggle);
+      row.addEventListener('keydown', function(e){ if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); toggle(); } });
+      rowRefs[kid.id][t.id] = row;
+      list.appendChild(row);
+    });
+
+    card.appendChild(list);
+    kidsGrid.appendChild(card);
+    updateKidProgress(kid.id);
+  });
+
+  // applies a single task toggle to local state + DOM; broadcasts to phone(s) when it
+  // originated on the TV itself (a click here), not when it's an echo of a phone message
+  function applyToggle(kidId, taskId, broadcast){
+    if(!done[kidId]) return;
+    done[kidId][taskId] = !done[kidId][taskId];
+    var nowDone = done[kidId][taskId];
+    var row = rowRefs[kidId][taskId];
+    if(row){
+      row.classList.toggle('done', nowDone);
+      row.setAttribute('aria-checked', nowDone ? 'true' : 'false');
+      row.classList.remove('bounce'); void row.offsetWidth; row.classList.add('bounce');
+    }
+    safeSet(STORAGE_DONE, JSON.stringify(done));
+    updateKidProgress(kidId);
+    updateProgress();
+    if(broadcast && typeof window.__launchpadSendToggle === 'function'){
+      window.__launchpadSendToggle(kidId, taskId);
+    }
+  }
+
+  // replaces leave time and/or the full done map, e.g. right after a phone connects
+  function applyStateSync(data){
+    if(typeof data.leaveTime === 'number'){
+      setLeaveTime(new Date(data.leaveTime), new Date(), typeof data.totalMs === 'number' ? data.totalMs : null);
+    }
+    if(data.done){
+      Object.keys(data.done).forEach(function(kidId){
+        if(!done[kidId]) return;
+        TASKS.forEach(function(t){
+          var nowDone = !!(data.done[kidId] && data.done[kidId][t.id]);
+          done[kidId][t.id] = nowDone;
+          var row = rowRefs[kidId][t.id];
+          if(row){
+            row.classList.toggle('done', nowDone);
+            row.setAttribute('aria-checked', nowDone ? 'true' : 'false');
+          }
+        });
+        updateKidProgress(kidId);
+      });
+      safeSet(STORAGE_DONE, JSON.stringify(done));
+      updateProgress();
+    }
+    tick();
+  }
+  window.__launchpadApplyToggle = applyToggle;
+  window.__launchpadApplyStateSync = applyStateSync;
+
+  function updateKidProgress(kidId){
+    var progressEl = progressRefs[kidId];
+    var count = TASKS.filter(function(t){ return done[kidId][t.id]; }).length;
+    progressEl.textContent = count + '/' + TASKS.length;
+    progressEl.classList.toggle('all-done', count === TASKS.length);
+  }
+
+  var progressChip = document.getElementById('progressChip');
+  var banner = document.getElementById('banner');
+  function totalDoneCount(){
+    var count = 0;
+    KIDS.forEach(function(kid){ TASKS.forEach(function(t){ if(done[kid.id][t.id]) count++; }); });
+    return count;
+  }
+  function updateProgress(){
+    var count = totalDoneCount();
+    progressChip.textContent = count + ' of ' + totalTaskCount + ' done';
+    if(count === totalTaskCount){
+      banner.textContent = "Everyone's ready — nice work! ✨";
+      banner.className = 'banner ready';
+    } else {
+      banner.className = 'banner';
+      banner.textContent = (totalTaskCount - count) + ' task' + (totalTaskCount - count === 1 ? '' : 's') + ' left to check off';
+    }
+  }
+
+  // ---- clock ----
+  var clockEl = document.getElementById('clock');
+  var dateLine = document.getElementById('dateLine');
+  var greeting = document.getElementById('greeting');
+  var days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  var months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+  function pad(n){ return n < 10 ? '0' + n : '' + n; }
+
+  function renderClock(now){
+    var h = now.getHours();
+    var m = now.getMinutes();
+    var ampm = h >= 12 ? 'PM' : 'AM';
+    var h12 = h % 12; if(h12 === 0) h12 = 12;
+    clockEl.innerHTML = h12 + ':' + pad(m) + ' <small>' + ampm + '</small>';
+    dateLine.textContent = days[now.getDay()] + ', ' + months[now.getMonth()] + ' ' + now.getDate();
+    if(h < 10) greeting.textContent = 'Good morning, crew!';
+    else greeting.textContent = "Let's get moving!";
+  }
+
+  // ---- countdown dial ----
+  var leaveInput = document.getElementById('leaveTimeInput');
+  var countdownBand = document.getElementById('countdownBand');
+  var countdownTime = document.getElementById('countdownTime');
+  var dialWedge = document.getElementById('dialWedge');
+  var trackCaption = document.getElementById('trackCaption');
+
+  var DIAL_CX = 100, DIAL_CY = 100, DIAL_R = 84;
+
+  (function drawTicks(){
+    var ticksGroup = document.getElementById('dialTicks');
+    for(var i = 0; i < 12; i++){
+      var deg = i * 30;
+      var rad = (deg - 90) * Math.PI / 180;
+      var outerR = 92, innerR = i % 3 === 0 ? 78 : 84;
+      var x1 = DIAL_CX + outerR * Math.cos(rad);
+      var y1 = DIAL_CY + outerR * Math.sin(rad);
+      var x2 = DIAL_CX + innerR * Math.cos(rad);
+      var y2 = DIAL_CY + innerR * Math.sin(rad);
+      var line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      line.setAttribute('class', 'dial-tick');
+      line.setAttribute('x1', x1); line.setAttribute('y1', y1);
+      line.setAttribute('x2', x2); line.setAttribute('y2', y2);
+      ticksGroup.appendChild(line);
+    }
+  })();
+
+  function piePath(fraction){
+    fraction = Math.max(0, Math.min(1, fraction));
+    if(fraction <= 0.0015) return '';
+    if(fraction >= 0.9985){
+      return 'M ' + DIAL_CX + ' ' + (DIAL_CY - DIAL_R) +
+        ' A ' + DIAL_R + ' ' + DIAL_R + ' 0 1 1 ' + (DIAL_CX - 0.01) + ' ' + (DIAL_CY - DIAL_R) + ' Z';
+    }
+    var angle = fraction * 360;
+    function pt(deg){
+      var rad = (deg - 90) * Math.PI / 180;
+      return { x: DIAL_CX + DIAL_R * Math.cos(rad), y: DIAL_CY + DIAL_R * Math.sin(rad) };
+    }
+    var start = pt(0);
+    var end = pt(angle);
+    var largeArc = angle > 180 ? 1 : 0;
+    return 'M ' + DIAL_CX + ' ' + DIAL_CY + ' L ' + start.x + ' ' + start.y +
+      ' A ' + DIAL_R + ' ' + DIAL_R + ' 0 ' + largeArc + ' 1 ' + end.x + ' ' + end.y + ' Z';
+  }
+
+  var leaveTime = null;
+  var totalMs = null;
+
+  function defaultLeave(now){
+    return new Date(now.getTime() + 25 * 60000);
+  }
+
+  var storedLeave = safeGet(STORAGE_LEAVE);
+  var storedTotal = safeGet(STORAGE_TOTAL);
+  if(storedLeave){
+    leaveTime = new Date(parseInt(storedLeave, 10));
+    totalMs = storedTotal ? parseInt(storedTotal, 10) : null;
+  }
+
+  function setLeaveTime(d, now, explicitTotalMs){
+    leaveTime = d;
+    totalMs = explicitTotalMs || Math.max(1, leaveTime.getTime() - now.getTime());
+    safeSet(STORAGE_LEAVE, String(leaveTime.getTime()));
+    safeSet(STORAGE_TOTAL, String(totalMs));
+    leaveInput.value = pad(leaveTime.getHours()) + ':' + pad(leaveTime.getMinutes());
+  }
+
+  (function init(){
+    var now = new Date();
+    if(!leaveTime || leaveTime.getTime() - now.getTime() < -30*60000){
+      setLeaveTime(defaultLeave(now), now);
+    } else if(!totalMs){
+      totalMs = Math.max(1, leaveTime.getTime() - now.getTime());
+      leaveInput.value = pad(leaveTime.getHours()) + ':' + pad(leaveTime.getMinutes());
+    } else {
+      leaveInput.value = pad(leaveTime.getHours()) + ':' + pad(leaveTime.getMinutes());
+    }
+  })();
+
+  function formatCountdown(ms){
+    var totalSec = Math.max(0, Math.round(ms / 1000));
+    var h = Math.floor(totalSec / 3600);
+    var m = Math.floor((totalSec % 3600) / 60);
+    var s = totalSec % 60;
+    if(h > 0) return h + ':' + pad(m) + ':' + pad(s);
+    return m + ':' + pad(s);
+  }
+
+  function tick(){
+    var now = new Date();
+    renderClock(now);
+    var remaining = leaveTime.getTime() - now.getTime();
+    if(remaining <= 0){
+      countdownTime.textContent = "It's time!";
+      dialWedge.setAttribute('d', '');
+      countdownBand.className = 'countdown state-crit';
+      trackCaption.textContent = 'time to go!';
+    } else {
+      countdownTime.textContent = formatCountdown(remaining);
+      var fraction = remaining / totalMs;
+      dialWedge.setAttribute('d', piePath(fraction));
+      var mins = remaining / 60000;
+      var state = mins <= 5 ? 'state-crit' : (mins <= 15 ? 'state-warn' : '');
+      countdownBand.className = 'countdown ' + state;
+      trackCaption.textContent = 'until leaving';
+    }
+    var count = totalDoneCount();
+    if(remaining <= 0 && count < totalTaskCount){
+      banner.className = 'banner crit';
+      banner.textContent = "Time to go — finish up on the way!";
+    } else if(count === totalTaskCount){
+      banner.className = 'banner ready';
+      banner.textContent = "Everyone's ready — nice work! ✨";
+    }
+  }
+
+  updateProgress();
+  tick();
+  setInterval(tick, 1000);
+})();
+</script>
+
+<!-- Google Cast Application Framework (receiver side) -->
+<script src="https://www.gstatic.com/cast/sdk/libs/caf_receiver/3.0/cast_receiver_framework.js"></script>
+<script>
+(function(){
+  var NAMESPACE = 'urn:x-cast:com.schoolapp.launchpad';
+  var connPill = document.getElementById('connPill');
+  var context = cast.framework.CastReceiverContext.getInstance();
+
+  window.__launchpadSendToggle = function(kidId, taskId){
+    try{
+      context.getSenders().forEach(function(sender){
+        context.sendCustomMessage(NAMESPACE, sender.id, { type:'TASK_TOGGLE', kidId: kidId, taskId: taskId });
+      });
+    }catch(e){}
+  };
+
+  context.addCustomMessageListener(NAMESPACE, function(event){
+    var data = event.data;
+    if(!data || !data.type) return;
+    if(data.type === 'STATE_SYNC'){
+      window.__launchpadApplyStateSync(data);
+    } else if(data.type === 'TASK_TOGGLE'){
+      window.__launchpadApplyToggle(data.kidId, data.taskId, false);
+    }
+  });
+
+  context.addEventListener(cast.framework.system.EventType.SENDER_CONNECTED, function(){
+    connPill.textContent = 'Phone connected';
+  });
+  context.addEventListener(cast.framework.system.EventType.SENDER_DISCONNECTED, function(){
+    connPill.textContent = context.getSenders().length > 0 ? 'Phone connected' : 'Waiting for phone…';
+  });
+
+  var options = new cast.framework.CastReceiverOptions();
+  options.disableIdleTimeout = true; // this is a dashboard, not a media player — never auto-close it
+  context.start(options);
+})();
+</script>
+
+</body>
+</html>
