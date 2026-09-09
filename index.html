@@ -60,44 +60,15 @@
     align-items:flex-start;
     gap:1.6rem;
   }
-  .greeting-eyebrow{
-    font-size:clamp(0.75rem, 1vw, 0.92rem);
-    letter-spacing:0.14em;
-    text-transform:uppercase;
-    color:var(--sun-soft);
-    font-weight:600;
-    margin:0 0 0.25rem;
-  }
-  .greeting{
+  .date-line{
+    margin:0;
+    color:var(--text-hi);
     font-family:'Fredoka', sans-serif;
     font-weight:600;
-    font-size:clamp(1.4rem, 2.6vw, 2.1rem);
-    margin:0;
+    font-size:clamp(1.8rem, 3.6vw, 2.8rem);
     text-wrap:balance;
   }
-  .date-line{
-    margin:0.25rem 0 0;
-    color:var(--text-mid);
-    font-size:clamp(0.9rem, 1.15vw, 1.05rem);
-    font-weight:600;
-  }
 
-  .word-of-day{
-    margin-top:0.6rem;
-    display:flex;
-    align-items:baseline;
-    flex-wrap:wrap;
-    gap:0.4rem 0.5rem;
-    max-width:44ch;
-  }
-  .wod-label{
-    font-size:0.68rem;
-    letter-spacing:0.1em;
-    text-transform:uppercase;
-    color:var(--text-dim);
-    font-weight:700;
-    flex:0 0 auto;
-  }
   .wod-word{
     font-family:'Fredoka', sans-serif;
     font-weight:600;
@@ -188,6 +159,17 @@
     font-family:'Fredoka', sans-serif;
     font-weight:600;
   }
+  .side-card-section{
+    display:flex;
+    flex-direction:column;
+    gap:0.3rem;
+  }
+  .side-card-divider{
+    height:1px;
+    background:var(--hairline);
+    margin:0.5rem 0;
+    flex:0 0 auto;
+  }
 
   .activity-row{
     display:flex;
@@ -229,8 +211,8 @@
 
   .dial-wrap{
     position:relative;
-    width:clamp(130px, 15vw, 190px);
-    height:clamp(130px, 15vw, 190px);
+    width:clamp(170px, 19vw, 235px);
+    height:clamp(170px, 19vw, 235px);
     flex:0 0 auto;
   }
   .dial-face{
@@ -271,13 +253,13 @@
   .dial-time{
     font-family:'Fredoka', sans-serif;
     font-weight:600;
-    font-size:clamp(1.3rem, 2.6vw, 1.9rem);
+    font-size:clamp(1.9rem, 3.8vw, 2.9rem);
     font-variant-numeric:tabular-nums;
     color:var(--text-hi);
     line-height:1;
   }
   .track-caption{
-    font-size:clamp(0.6rem, 0.75vw, 0.7rem);
+    font-size:clamp(0.68rem, 0.85vw, 0.8rem);
     color:var(--text-mid);
     font-weight:700;
     text-transform:uppercase;
@@ -511,16 +493,7 @@
 
 <div class="stage">
   <div class="topbar">
-    <div>
-      <p class="greeting-eyebrow">Rise and shine</p>
-      <h1 class="greeting" id="greeting">Good morning, crew!</h1>
-      <p class="date-line" id="dateLine">&nbsp;</p>
-      <div class="word-of-day">
-        <span class="wod-label">Word of the day</span>
-        <span class="wod-word" id="wodWord">—</span>
-        <span class="wod-def" id="wodDef"></span>
-      </div>
-    </div>
+    <p class="date-line" id="dateLine">&nbsp;</p>
     <div class="topbar-right">
       <span class="conn-pill" id="connPill">Waiting for phone…</span>
       <div class="time-pair">
@@ -538,8 +511,15 @@
 
   <div class="mid-row">
     <div class="side-card">
-      <span class="side-card-eyebrow">Fun fact</span>
-      <p class="side-card-body" id="funFactBody">—</p>
+      <div class="side-card-section">
+        <span class="side-card-eyebrow">Word of the day</span>
+        <p class="side-card-body"><span class="wod-word" id="wodWord">—</span> <span id="wodDef"></span></p>
+      </div>
+      <div class="side-card-divider"></div>
+      <div class="side-card-section">
+        <span class="side-card-eyebrow">Fun fact</span>
+        <p class="side-card-body" id="funFactBody">—</p>
+      </div>
     </div>
 
     <div class="countdown" id="countdownBand">
@@ -558,8 +538,15 @@
     </div>
 
     <div class="side-card">
-      <span class="side-card-eyebrow">This afternoon</span>
-      <div class="side-card-body" id="activitiesBody">Nothing on the calendar today.</div>
+      <div class="side-card-section">
+        <span class="side-card-eyebrow">This afternoon</span>
+        <div class="side-card-body" id="activitiesBody">Nothing on the calendar today.</div>
+      </div>
+      <div class="side-card-divider"></div>
+      <div class="side-card-section">
+        <span class="side-card-eyebrow">What's for dinner?</span>
+        <p class="side-card-body" id="dinnerBody">Not planned yet.</p>
+      </div>
     </div>
   </div>
 
@@ -714,6 +701,11 @@
     }).join('');
   }
 
+  var dinnerBody = document.getElementById('dinnerBody');
+  function renderDinner(meal){
+    dinnerBody.textContent = (meal && meal.trim().length > 0) ? meal : 'Not planned yet.';
+  }
+
   // replaces leave time and/or the whole kids/tasks structure — sent by the phone
   // right after it connects, and again whenever App Setup or the calendar changes
   function applyStateSync(data){
@@ -725,6 +717,9 @@
     }
     if(Array.isArray(data.activities)){
       renderActivities(data.activities);
+    }
+    if(typeof data.dinnerToday === 'string'){
+      renderDinner(data.dinnerToday);
     }
     tick();
   }
@@ -797,7 +792,6 @@
   var clockEl = document.getElementById('clock');
   var leaveClockEl = document.getElementById('leaveClock');
   var dateLine = document.getElementById('dateLine');
-  var greeting = document.getElementById('greeting');
   var days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
   var months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 
@@ -812,11 +806,8 @@
   }
 
   function renderClock(now){
-    var h = now.getHours();
     clockEl.innerHTML = formatClock(now);
     dateLine.textContent = days[now.getDay()] + ', ' + months[now.getMonth()] + ' ' + now.getDate() + ', ' + now.getFullYear();
-    if(h < 10) greeting.textContent = 'Good morning, crew!';
-    else greeting.textContent = "Let's get moving!";
   }
 
   // ---- word of the day ----
