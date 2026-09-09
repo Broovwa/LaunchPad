@@ -21,14 +21,12 @@
     --calm:#4fd1b3;
     --warn:#ffb238;
     --crit:#ff6f6f;
-    --badge-teeth:#7fd8d1;
-    --badge-shirt:#f2a86f;
-    --badge-food:#f2d16b;
-    --badge-pack:#9ab8f2;
-    --badge-shoe:#e29ad0;
-    --kid-bronson:#6fb1f2;
-    --kid-bruce:#f2946f;
-    --kid-cheryl:#c9a0f2;
+    --kid-c0:#6fb1f2;
+    --kid-c1:#f2946f;
+    --kid-c2:#c9a0f2;
+    --kid-c3:#7fd8d1;
+    --kid-c4:#f2d16b;
+    --kid-c5:#e29ad0;
   }
 
   *{box-sizing:border-box;}
@@ -351,23 +349,10 @@
     transition:opacity 0.15s ease;
   }
 
-  .task-icon-badge{
-    width:clamp(30px, 3.2vw, 38px);
-    height:clamp(30px, 3.2vw, 38px);
-    border-radius:50%;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    flex:0 0 auto;
-  }
-  .task-icon-badge svg{
-    width:58%;
-    height:58%;
-    stroke:var(--bg-deep);
-    stroke-width:2.6;
-    fill:none;
-    stroke-linecap:round;
-    stroke-linejoin:round;
+  .kid-empty{
+    color:var(--text-dim);
+    font-size:0.9rem;
+    padding:0.4rem 0.2rem;
   }
 
   .task-label{
@@ -464,7 +449,7 @@
     </div>
     <div class="leave-time-adjust">
       <label for="leaveTimeInput">Leave time</label>
-      <input type="time" id="leaveTimeInput" />
+      <input type="time" id="leaveTimeInput" disabled />
       <span class="hint">set from the phone app</span>
     </div>
   </div>
@@ -481,100 +466,117 @@
 
 <script>
 (function(){
-  var TASKS = [
-    { id:'teeth', label:'Brush teeth', color:'var(--badge-teeth)', icon:
-      '<svg viewBox="0 0 24 24"><path d="M4 3l14 3-1 6c-.4 3-2 6-5 6s-4-2-4.5-4.5S7 9 5 8L4 3z"/><circle cx="9" cy="6.4" r="0.6" fill="var(--bg-deep)" stroke="none"/><circle cx="12.4" cy="7.1" r="0.6" fill="var(--bg-deep)" stroke="none"/><circle cx="15.8" cy="7.8" r="0.6" fill="var(--bg-deep)" stroke="none"/></svg>' },
-    { id:'dressed', label:'Get dressed', color:'var(--badge-shirt)', icon:
-      '<svg viewBox="0 0 24 24"><path d="M9 3l3 2 3-2 4 3-2 3-2-1v10H8V8L6 9 4 6l5-3z"/></svg>' },
-    { id:'breakfast', label:'Eat breakfast', color:'var(--badge-food)', icon:
-      '<svg viewBox="0 0 24 24"><path d="M4 11a8 8 0 0 1 16 0z"/><path d="M3 11h18"/><path d="M6 15c0 3 2.5 5 6 5s6-2 6-5"/></svg>' },
-    { id:'backpack', label:'Pack backpack', color:'var(--badge-pack)', icon:
-      '<svg viewBox="0 0 24 24"><rect x="6" y="8" width="12" height="12" rx="3"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/><path d="M9 13h6"/><path d="M12 13v5"/></svg>' },
-    { id:'shoes', label:'Put on shoes', color:'var(--badge-shoe)', icon:
-      '<svg viewBox="0 0 24 24"><path d="M3 17c0-2 1.5-3 3-3l3-4 3 1c2 .7 4 1 7 1v3c0 1.1-.9 2-2 2H4c-.6 0-1-.4-1-1z"/></svg>' }
-  ];
-
   var CHECK_ICON = '<svg viewBox="0 0 24 24"><path d="M4 12l6 6L20 6"/></svg>';
+  var KID_COLOR_PALETTE = ['var(--kid-c0)','var(--kid-c1)','var(--kid-c2)','var(--kid-c3)','var(--kid-c4)','var(--kid-c5)'];
 
-  var KIDS = [
-    { id:'bronson', name:'Bronson', color:'var(--kid-bronson)' },
-    { id:'bruce', name:'Bruce', color:'var(--kid-bruce)' },
-    { id:'cheryl', name:'Cheryl', color:'var(--kid-cheryl)' }
-  ];
+  // shown before any phone has ever connected; the phone's App Setup is the real
+  // source of truth once it syncs — see applyStateSync()
+  function defaultKids(){
+    function tasks(){
+      return [
+        { id:'teeth', label:'Brush teeth', done:false },
+        { id:'dressed', label:'Get dressed', done:false },
+        { id:'breakfast', label:'Eat breakfast', done:false },
+        { id:'backpack', label:'Pack backpack', done:false },
+        { id:'shoes', label:'Put on shoes', done:false }
+      ];
+    }
+    return [
+      { id:'bronson', name:'Bronson', colorIndex:0, tasks: tasks() },
+      { id:'bruce', name:'Bruce', colorIndex:1, tasks: tasks() },
+      { id:'cheryl', name:'Cheryl', colorIndex:2, tasks: tasks() }
+    ];
+  }
 
-  var todayKey = new Date().toDateString();
-  var STORAGE_DONE = 'launchpad.done.' + todayKey;
-  var STORAGE_LEAVE = 'launchpad.leave.' + todayKey;
-  var STORAGE_TOTAL = 'launchpad.total.' + todayKey;
-
-  function safeGet(key){ try{ return localStorage.getItem(key); }catch(e){ return null; } }
-  function safeSet(key, val){ try{ localStorage.setItem(key, val); }catch(e){} }
-
-  var done = {};
-  try{ done = JSON.parse(safeGet(STORAGE_DONE) || '{}'); }catch(e){ done = {}; }
-  KIDS.forEach(function(k){ if(!done[k.id]) done[k.id] = {}; });
-
-  var totalTaskCount = KIDS.length * TASKS.length;
+  var currentKids = [];
   var kidsGrid = document.getElementById('kidsGrid');
   var rowRefs = {};
   var progressRefs = {};
 
-  KIDS.forEach(function(kid){
-    rowRefs[kid.id] = {};
+  function escapeHtml(str){
+    var div = document.createElement('div');
+    div.textContent = str == null ? '' : String(str);
+    return div.innerHTML;
+  }
 
-    var card = document.createElement('div');
-    card.className = 'kid-card';
+  // full rebuild of the kids grid — called on first load and whenever the phone
+  // sends a new STATE_SYNC (a kid or task was added/removed/renamed)
+  function renderDashboard(kidsConfig){
+    currentKids = kidsConfig;
+    kidsGrid.innerHTML = '';
+    rowRefs = {};
+    progressRefs = {};
 
-    var header = document.createElement('div');
-    header.className = 'kid-header';
-    header.innerHTML =
-      '<div class="kid-avatar" style="background:' + kid.color + '">' + kid.name.charAt(0) + '</div>' +
-      '<div class="kid-name">' + kid.name + '</div>';
-    var progressEl = document.createElement('div');
-    progressEl.className = 'kid-progress';
-    header.appendChild(progressEl);
-    card.appendChild(header);
-    progressRefs[kid.id] = progressEl;
+    kidsConfig.forEach(function(kid){
+      rowRefs[kid.id] = {};
+      var color = KID_COLOR_PALETTE[kid.colorIndex % KID_COLOR_PALETTE.length];
 
-    var list = document.createElement('div');
-    list.className = 'kid-tasklist';
+      var card = document.createElement('div');
+      card.className = 'kid-card';
 
-    TASKS.forEach(function(t){
-      var row = document.createElement('div');
-      var isDone = !!done[kid.id][t.id];
-      row.className = 'task-row' + (isDone ? ' done' : '');
-      row.tabIndex = 0;
-      row.setAttribute('role','checkbox');
-      row.setAttribute('aria-checked', isDone ? 'true' : 'false');
-      row.innerHTML =
-        '<div class="task-checkbox">' + CHECK_ICON + '</div>' +
-        '<div class="task-icon-badge" style="background:' + t.color + '">' + t.icon + '</div>' +
-        '<div class="task-label">' + t.label + '</div>';
-      function toggle(){ applyToggle(kid.id, t.id, true); }
-      row.addEventListener('click', toggle);
-      row.addEventListener('keydown', function(e){ if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); toggle(); } });
-      rowRefs[kid.id][t.id] = row;
-      list.appendChild(row);
+      var header = document.createElement('div');
+      header.className = 'kid-header';
+      header.innerHTML =
+        '<div class="kid-avatar" style="background:' + color + '">' + escapeHtml((kid.name || '?').charAt(0)) + '</div>' +
+        '<div class="kid-name">' + escapeHtml(kid.name) + '</div>';
+      var progressEl = document.createElement('div');
+      progressEl.className = 'kid-progress';
+      header.appendChild(progressEl);
+      card.appendChild(header);
+      progressRefs[kid.id] = progressEl;
+
+      var list = document.createElement('div');
+      list.className = 'kid-tasklist';
+
+      if(!kid.tasks || kid.tasks.length === 0){
+        var empty = document.createElement('div');
+        empty.className = 'kid-empty';
+        empty.textContent = 'No tasks yet';
+        list.appendChild(empty);
+      }
+
+      (kid.tasks || []).forEach(function(t){
+        var row = document.createElement('div');
+        row.className = 'task-row' + (t.done ? ' done' : '');
+        row.tabIndex = 0;
+        row.setAttribute('role','checkbox');
+        row.setAttribute('aria-checked', t.done ? 'true' : 'false');
+        row.innerHTML =
+          '<div class="task-checkbox">' + CHECK_ICON + '</div>' +
+          '<div class="task-label">' + escapeHtml(t.label) + '</div>';
+        function toggle(){ applyToggle(kid.id, t.id, true); }
+        row.addEventListener('click', toggle);
+        row.addEventListener('keydown', function(e){ if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); toggle(); } });
+        rowRefs[kid.id][t.id] = row;
+        list.appendChild(row);
+      });
+
+      card.appendChild(list);
+      kidsGrid.appendChild(card);
+      updateKidProgress(kid.id);
     });
 
-    card.appendChild(list);
-    kidsGrid.appendChild(card);
-    updateKidProgress(kid.id);
-  });
+    updateProgress();
+  }
+
+  function findTask(kidId, taskId){
+    var kid = currentKids.filter(function(k){ return k.id === kidId; })[0];
+    if(!kid) return null;
+    return (kid.tasks || []).filter(function(t){ return t.id === taskId; })[0] || null;
+  }
 
   // applies a single task toggle to local state + DOM; broadcasts to phone(s) when it
   // originated on the TV itself (a click here), not when it's an echo of a phone message
   function applyToggle(kidId, taskId, broadcast){
-    if(!done[kidId]) return;
-    done[kidId][taskId] = !done[kidId][taskId];
-    var nowDone = done[kidId][taskId];
-    var row = rowRefs[kidId][taskId];
+    var task = findTask(kidId, taskId);
+    if(!task) return;
+    task.done = !task.done;
+    var row = rowRefs[kidId] && rowRefs[kidId][taskId];
     if(row){
-      row.classList.toggle('done', nowDone);
-      row.setAttribute('aria-checked', nowDone ? 'true' : 'false');
+      row.classList.toggle('done', task.done);
+      row.setAttribute('aria-checked', task.done ? 'true' : 'false');
       row.classList.remove('bounce'); void row.offsetWidth; row.classList.add('bounce');
     }
-    safeSet(STORAGE_DONE, JSON.stringify(done));
     updateKidProgress(kidId);
     updateProgress();
     if(broadcast && typeof window.__launchpadSendToggle === 'function'){
@@ -582,27 +584,14 @@
     }
   }
 
-  // replaces leave time and/or the full done map, e.g. right after a phone connects
+  // replaces leave time and/or the whole kids/tasks structure — sent by the phone
+  // right after it connects, and again whenever App Setup changes
   function applyStateSync(data){
     if(typeof data.leaveTime === 'number'){
       setLeaveTime(new Date(data.leaveTime), new Date(), typeof data.totalMs === 'number' ? data.totalMs : null);
     }
-    if(data.done){
-      Object.keys(data.done).forEach(function(kidId){
-        if(!done[kidId]) return;
-        TASKS.forEach(function(t){
-          var nowDone = !!(data.done[kidId] && data.done[kidId][t.id]);
-          done[kidId][t.id] = nowDone;
-          var row = rowRefs[kidId][t.id];
-          if(row){
-            row.classList.toggle('done', nowDone);
-            row.setAttribute('aria-checked', nowDone ? 'true' : 'false');
-          }
-        });
-        updateKidProgress(kidId);
-      });
-      safeSet(STORAGE_DONE, JSON.stringify(done));
-      updateProgress();
+    if(Array.isArray(data.kids)){
+      renderDashboard(data.kids);
     }
     tick();
   }
@@ -610,30 +599,38 @@
   window.__launchpadApplyStateSync = applyStateSync;
 
   function updateKidProgress(kidId){
+    var kid = currentKids.filter(function(k){ return k.id === kidId; })[0];
     var progressEl = progressRefs[kidId];
-    var count = TASKS.filter(function(t){ return done[kidId][t.id]; }).length;
-    progressEl.textContent = count + '/' + TASKS.length;
-    progressEl.classList.toggle('all-done', count === TASKS.length);
+    if(!kid || !progressEl) return;
+    var tasks = kid.tasks || [];
+    var count = tasks.filter(function(t){ return t.done; }).length;
+    progressEl.textContent = count + '/' + tasks.length;
+    progressEl.classList.toggle('all-done', tasks.length > 0 && count === tasks.length);
   }
 
   var progressChip = document.getElementById('progressChip');
   var banner = document.getElementById('banner');
   function totalDoneCount(){
-    var count = 0;
-    KIDS.forEach(function(kid){ TASKS.forEach(function(t){ if(done[kid.id][t.id]) count++; }); });
-    return count;
+    var doneCount = 0, total = 0;
+    currentKids.forEach(function(kid){
+      (kid.tasks || []).forEach(function(t){ total++; if(t.done) doneCount++; });
+    });
+    return { done: doneCount, total: total };
   }
   function updateProgress(){
-    var count = totalDoneCount();
-    progressChip.textContent = count + ' of ' + totalTaskCount + ' done';
-    if(count === totalTaskCount){
+    var counts = totalDoneCount();
+    progressChip.textContent = counts.done + ' of ' + counts.total + ' done';
+    if(counts.total > 0 && counts.done === counts.total){
       banner.textContent = "Everyone's ready — nice work! ✨";
       banner.className = 'banner ready';
     } else {
       banner.className = 'banner';
-      banner.textContent = (totalTaskCount - count) + ' task' + (totalTaskCount - count === 1 ? '' : 's') + ' left to check off';
+      var remaining = counts.total - counts.done;
+      banner.textContent = remaining + ' task' + (remaining === 1 ? '' : 's') + ' left to check off';
     }
   }
+
+  renderDashboard(defaultKids());
 
   // ---- clock ----
   var clockEl = document.getElementById('clock');
@@ -708,32 +705,13 @@
     return new Date(now.getTime() + 25 * 60000);
   }
 
-  var storedLeave = safeGet(STORAGE_LEAVE);
-  var storedTotal = safeGet(STORAGE_TOTAL);
-  if(storedLeave){
-    leaveTime = new Date(parseInt(storedLeave, 10));
-    totalMs = storedTotal ? parseInt(storedTotal, 10) : null;
-  }
-
   function setLeaveTime(d, now, explicitTotalMs){
     leaveTime = d;
     totalMs = explicitTotalMs || Math.max(1, leaveTime.getTime() - now.getTime());
-    safeSet(STORAGE_LEAVE, String(leaveTime.getTime()));
-    safeSet(STORAGE_TOTAL, String(totalMs));
     leaveInput.value = pad(leaveTime.getHours()) + ':' + pad(leaveTime.getMinutes());
   }
 
-  (function init(){
-    var now = new Date();
-    if(!leaveTime || leaveTime.getTime() - now.getTime() < -30*60000){
-      setLeaveTime(defaultLeave(now), now);
-    } else if(!totalMs){
-      totalMs = Math.max(1, leaveTime.getTime() - now.getTime());
-      leaveInput.value = pad(leaveTime.getHours()) + ':' + pad(leaveTime.getMinutes());
-    } else {
-      leaveInput.value = pad(leaveTime.getHours()) + ':' + pad(leaveTime.getMinutes());
-    }
-  })();
+  setLeaveTime(defaultLeave(new Date()), new Date());
 
   function formatCountdown(ms){
     var totalSec = Math.max(0, Math.round(ms / 1000));
@@ -762,11 +740,11 @@
       countdownBand.className = 'countdown ' + state;
       trackCaption.textContent = 'until leaving';
     }
-    var count = totalDoneCount();
-    if(remaining <= 0 && count < totalTaskCount){
+    var counts = totalDoneCount();
+    if(remaining <= 0 && counts.done < counts.total){
       banner.className = 'banner crit';
       banner.textContent = "Time to go — finish up on the way!";
-    } else if(count === totalTaskCount){
+    } else if(counts.total > 0 && counts.done === counts.total){
       banner.className = 'banner ready';
       banner.textContent = "Everyone's ready — nice work! ✨";
     }
@@ -779,7 +757,7 @@
 </script>
 
 <!-- Google Cast Application Framework (receiver side) -->
-<script src="https://www.gstatic.com/cast/sdk/libs/caf_receiver/3.0/cast_receiver_framework.js"></script>
+<script src="https://www.gstatic.com/cast/sdk/libs/caf_receiver/v3/cast_receiver_framework.js"></script>
 <script>
 (function(){
   var NAMESPACE = 'urn:x-cast:com.schoolapp.launchpad';
