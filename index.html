@@ -118,7 +118,7 @@
   }
   .time-pair{
     display:flex;
-    gap:clamp(1rem, 2.4vw, 2rem);
+    gap:clamp(2.2rem, 5.5vw, 4.2rem);
     flex:0 0 auto;
   }
   .time-block{
@@ -151,7 +151,63 @@
     font-weight:700;
   }
 
-  /* ---- countdown band ---- */
+  /* ---- middle row: fun fact | countdown dial | (reserved for activities) ---- */
+  .mid-row{
+    display:flex;
+    align-items:stretch;
+    gap:clamp(0.6rem, 1.2vw, 1rem);
+    flex:0 0 auto;
+  }
+
+  .side-card{
+    flex:1 1 0;
+    background:var(--surface);
+    border:1px solid var(--hairline);
+    border-radius:20px;
+    padding:clamp(0.7rem, 1.3vw, 1.1rem);
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    gap:0.3rem;
+    min-width:0;
+  }
+  .side-card-eyebrow{
+    font-size:clamp(0.62rem, 0.78vw, 0.72rem);
+    letter-spacing:0.1em;
+    text-transform:uppercase;
+    color:var(--text-dim);
+    font-weight:700;
+  }
+  .side-card-body{
+    font-size:clamp(0.82rem, 1.05vw, 0.98rem);
+    color:var(--text-mid);
+    line-height:1.35;
+  }
+  .side-card-body strong{
+    color:var(--sun-soft);
+    font-family:'Fredoka', sans-serif;
+    font-weight:600;
+  }
+
+  .activity-row{
+    display:flex;
+    gap:0.5rem;
+    align-items:baseline;
+  }
+  .activity-time{
+    font-weight:700;
+    color:var(--sun-soft);
+    font-variant-numeric:tabular-nums;
+    flex:0 0 auto;
+    font-size:0.9em;
+  }
+  .activity-title{
+    color:var(--text-mid);
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+  }
+
   .countdown{
     background:var(--surface);
     border:1px solid var(--hairline);
@@ -301,12 +357,26 @@
     text-overflow:ellipsis;
     white-space:nowrap;
   }
+  /* colored badges, not emoji — Chromecast's built-in browser often lacks
+     color-emoji glyphs, so medal emoji can silently render as nothing on a TV
+     even though they look fine in a normal desktop browser */
   .kid-medal{
-    font-size:clamp(0.95rem, 1.2vw, 1.15rem);
-    line-height:1;
+    width:clamp(18px, 1.9vw, 22px);
+    height:clamp(18px, 1.9vw, 22px);
+    border-radius:50%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-family:'Fredoka', sans-serif;
+    font-weight:700;
+    font-size:clamp(0.65rem, 0.8vw, 0.78rem);
+    color:var(--bg-deep);
     flex:0 0 auto;
   }
   .kid-medal:empty{display:none;}
+  .kid-medal.rank-0{background:#ffd24d;}
+  .kid-medal.rank-1{background:#ccd4de;}
+  .kid-medal.rank-2{background:#dd9a63;}
   .kid-progress{
     font-weight:700;
     font-size:clamp(0.68rem, 0.85vw, 0.78rem);
@@ -321,6 +391,11 @@
     display:flex;
     flex-direction:column;
     gap:clamp(0.1rem, 0.25vw, 0.2rem);
+  }
+  .kid-tasklist.two-col{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:clamp(0.1rem, 0.25vw, 0.2rem) clamp(0.4rem, 0.8vw, 0.6rem);
   }
 
   .task-row{
@@ -461,18 +536,30 @@
     </div>
   </div>
 
-  <div class="countdown" id="countdownBand">
-    <div class="dial-wrap">
-      <svg class="dial-face" viewBox="0 0 200 200" aria-hidden="true">
-        <circle class="dial-ring" cx="100" cy="100" r="92"></circle>
-        <g class="dial-ticks" id="dialTicks"></g>
-        <path class="dial-wedge" id="dialWedge" d=""></path>
-        <circle class="dial-hub" cx="100" cy="100" r="4"></circle>
-      </svg>
-      <div class="dial-center">
-        <div class="dial-time" id="countdownTime">--:--</div>
-        <span class="track-caption" id="trackCaption">until the bus</span>
+  <div class="mid-row">
+    <div class="side-card">
+      <span class="side-card-eyebrow">Fun fact</span>
+      <p class="side-card-body" id="funFactBody">—</p>
+    </div>
+
+    <div class="countdown" id="countdownBand">
+      <div class="dial-wrap">
+        <svg class="dial-face" viewBox="0 0 200 200" aria-hidden="true">
+          <circle class="dial-ring" cx="100" cy="100" r="92"></circle>
+          <g class="dial-ticks" id="dialTicks"></g>
+          <path class="dial-wedge" id="dialWedge" d=""></path>
+          <circle class="dial-hub" cx="100" cy="100" r="4"></circle>
+        </svg>
+        <div class="dial-center">
+          <div class="dial-time" id="countdownTime">--:--</div>
+          <span class="track-caption" id="trackCaption">until the bus</span>
+        </div>
       </div>
+    </div>
+
+    <div class="side-card">
+      <span class="side-card-eyebrow">This afternoon</span>
+      <div class="side-card-body" id="activitiesBody">Nothing on the calendar today.</div>
     </div>
   </div>
 
@@ -516,7 +603,6 @@
   var progressRefs = {};
   var medalRefs = {};
   var finishOrder = []; // kidIds in the order they first completed every task — drives medals
-  var MEDALS = ['🥇','🥈','🥉'];
 
   function escapeHtml(str){
     var div = document.createElement('div');
@@ -532,7 +618,10 @@
     rowRefs = {};
     progressRefs = {};
     medalRefs = {};
-    finishOrder = [];
+    // finishOrder is intentionally NOT reset here — it must survive a resync
+    // (a kid or task added/renamed, leave time changed) so a medal already
+    // earned this morning doesn't get shuffled or lost. updateMedals() below
+    // prunes any kid id that no longer exists or is no longer fully done.
 
     kidsConfig.forEach(function(kid){
       rowRefs[kid.id] = {};
@@ -555,7 +644,7 @@
       medalRefs[kid.id] = header.querySelector('.kid-medal');
 
       var list = document.createElement('div');
-      list.className = 'kid-tasklist';
+      list.className = 'kid-tasklist' + ((kid.tasks && kid.tasks.length > 5) ? ' two-col' : '');
 
       if(!kid.tasks || kid.tasks.length === 0){
         var empty = document.createElement('div');
@@ -613,14 +702,29 @@
     }
   }
 
+  var activitiesBody = document.getElementById('activitiesBody');
+  function renderActivities(items){
+    if(!items || items.length === 0){
+      activitiesBody.textContent = 'Nothing on the calendar this afternoon.';
+      return;
+    }
+    activitiesBody.innerHTML = items.map(function(item){
+      return '<div class="activity-row"><span class="activity-time">' + escapeHtml(item.time) +
+        '</span><span class="activity-title">' + escapeHtml(item.title) + '</span></div>';
+    }).join('');
+  }
+
   // replaces leave time and/or the whole kids/tasks structure — sent by the phone
-  // right after it connects, and again whenever App Setup changes
+  // right after it connects, and again whenever App Setup or the calendar changes
   function applyStateSync(data){
     if(typeof data.leaveTime === 'number'){
       setLeaveTime(new Date(data.leaveTime), new Date(), typeof data.totalMs === 'number' ? data.totalMs : null);
     }
     if(Array.isArray(data.kids)){
       renderDashboard(data.kids);
+    }
+    if(Array.isArray(data.activities)){
+      renderActivities(data.activities);
     }
     tick();
   }
@@ -654,7 +758,13 @@
       var medalEl = medalRefs[kid.id];
       if(!medalEl) return;
       var rank = finishOrder.indexOf(kid.id);
-      medalEl.textContent = (rank >= 0 && rank < MEDALS.length) ? MEDALS[rank] : '';
+      medalEl.className = 'kid-medal';
+      if(rank >= 0 && rank < 3){
+        medalEl.classList.add('rank-' + rank);
+        medalEl.textContent = String(rank + 1);
+      } else {
+        medalEl.textContent = '';
+      }
     });
   }
 
@@ -746,15 +856,62 @@
   var wodDefEl = document.getElementById('wodDef');
   var lastWordDateKey = '';
 
+  function dayOfYear(now){
+    var start = new Date(now.getFullYear(), 0, 0);
+    return Math.floor((now - start) / 86400000);
+  }
+
   function updateWordOfDay(now){
     var dateKey = now.getFullYear() + '-' + now.getMonth() + '-' + now.getDate();
     if(dateKey === lastWordDateKey) return;
     lastWordDateKey = dateKey;
-    var start = new Date(now.getFullYear(), 0, 0);
-    var dayOfYear = Math.floor((now - start) / 86400000);
-    var entry = WORD_LIST[dayOfYear % WORD_LIST.length];
+    var entry = WORD_LIST[dayOfYear(now) % WORD_LIST.length];
     wodWordEl.textContent = entry.word;
     wodDefEl.textContent = '— ' + entry.def;
+  }
+
+  // ---- fun fact of the day ----
+  var FUN_FACTS = [
+    'Honey never spoils — archaeologists have found 3,000-year-old honey that was still good to eat.',
+    'Octopuses have three hearts and blue blood.',
+    'A group of flamingos is called a "flamboyance."',
+    'Bananas are botanically berries, but strawberries aren’t.',
+    'Sharks have been around longer than trees — over 400 million years!',
+    'A bolt of lightning is hotter than the surface of the sun.',
+    'Sea otters hold hands while sleeping so they don’t float apart.',
+    'A single cloud can weigh more than a million pounds.',
+    'Butterflies taste with their feet.',
+    'The Eiffel Tower can grow more than 6 inches taller in summer heat.',
+    'A snail can sleep for three years straight.',
+    'There are more stars in the sky than grains of sand on every beach on Earth.',
+    'Elephants can’t jump — they’re the only mammal that can’t.',
+    'Wombat poop is cube-shaped.',
+    'A shrimp’s heart is located in its head.',
+    'Hot water can freeze faster than cold water under the right conditions.',
+    'A group of crows is called a "murder."',
+    'Your nose can remember 50,000 different scents.',
+    'It rains diamonds on Jupiter and Saturn.',
+    'A crocodile cannot stick its tongue out.',
+    'The shortest war in history lasted only 38 minutes.',
+    'Some turtles can breathe through their butts.',
+    'A jellyfish is 95% water.',
+    'The dot over a lowercase "i" or "j" has a name: a tittle.',
+    'Cows have best friends and get stressed when separated from them.',
+    'A blue whale’s heart is about the size of a small car.',
+    'Koalas have fingerprints so similar to humans they can confuse crime scenes.',
+    'The inventor of the frisbee was turned into a frisbee after he died — his ashes were molded into discs.',
+    'Tigers have striped skin, not just striped fur.',
+    'A rainbow can only be seen in the morning or late afternoon.'
+  ];
+  var funFactEl = document.getElementById('funFactBody');
+  var lastFactDateKey = '';
+
+  function updateFunFact(now){
+    var dateKey = now.getFullYear() + '-' + now.getMonth() + '-' + now.getDate();
+    if(dateKey === lastFactDateKey) return;
+    lastFactDateKey = dateKey;
+    var fact = FUN_FACTS[dayOfYear(now) % FUN_FACTS.length];
+    funFactEl.innerHTML = '<strong>Did you know?</strong> ' + fact;
   }
 
   // ---- countdown dial ----
@@ -830,6 +987,7 @@
     var now = new Date();
     renderClock(now);
     updateWordOfDay(now);
+    updateFunFact(now);
     var remaining = leaveTime.getTime() - now.getTime();
     if(remaining <= 0){
       countdownTime.textContent = "It's time!";
