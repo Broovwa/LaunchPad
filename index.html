@@ -38,61 +38,115 @@
       var(--bg-deep);
     color:var(--text-hi);
     font-family:'Quicksand', 'Segoe UI', sans-serif;
-    min-height:100vh;
-    overflow-x:hidden;
+    height:100vh;
+    overflow:hidden;
   }
 
   .stage{
-    max-width:1400px;
+    max-width:1500px;
     margin:0 auto;
-    padding:2.6vh 3.2vw 3.2vh;
+    padding:1.6vh 2.4vw 1.8vh;
     display:flex;
     flex-direction:column;
-    gap:2.4vh;
-    min-height:100vh;
+    gap:1.3vh;
+    height:100vh;
+    box-sizing:border-box;
   }
 
   /* ---- top bar ---- */
   .topbar{
     display:flex;
     justify-content:space-between;
-    align-items:flex-end;
-    gap:2rem;
+    align-items:flex-start;
+    gap:1.6rem;
   }
   .greeting-eyebrow{
-    font-size:clamp(0.85rem, 1.1vw, 1.05rem);
+    font-size:clamp(0.75rem, 1vw, 0.92rem);
     letter-spacing:0.14em;
     text-transform:uppercase;
     color:var(--sun-soft);
     font-weight:600;
-    margin:0 0 0.35rem;
+    margin:0 0 0.25rem;
   }
   .greeting{
     font-family:'Fredoka', sans-serif;
     font-weight:600;
-    font-size:clamp(1.8rem, 3.4vw, 2.7rem);
+    font-size:clamp(1.4rem, 2.6vw, 2.1rem);
     margin:0;
     text-wrap:balance;
   }
   .date-line{
-    margin:0.3rem 0 0;
+    margin:0.25rem 0 0;
     color:var(--text-mid);
-    font-size:clamp(1rem, 1.3vw, 1.2rem);
+    font-size:clamp(0.9rem, 1.15vw, 1.05rem);
     font-weight:600;
   }
-  .clock{
+
+  .word-of-day{
+    margin-top:0.6rem;
+    display:flex;
+    align-items:baseline;
+    flex-wrap:wrap;
+    gap:0.4rem 0.5rem;
+    max-width:44ch;
+  }
+  .wod-label{
+    font-size:0.68rem;
+    letter-spacing:0.1em;
+    text-transform:uppercase;
+    color:var(--text-dim);
+    font-weight:700;
+    flex:0 0 auto;
+  }
+  .wod-word{
     font-family:'Fredoka', sans-serif;
     font-weight:600;
-    font-size:clamp(3rem, 7vw, 5.6rem);
+    font-size:clamp(0.95rem, 1.2vw, 1.1rem);
+    color:var(--sun-soft);
+  }
+  .wod-def{
+    font-size:clamp(0.8rem, 1vw, 0.9rem);
+    color:var(--text-mid);
+  }
+
+  .topbar-right{
+    display:flex;
+    flex-direction:column;
+    align-items:flex-end;
+    gap:0.4rem;
+    flex:0 0 auto;
+  }
+  .time-pair{
+    display:flex;
+    gap:clamp(1rem, 2.4vw, 2rem);
+    flex:0 0 auto;
+  }
+  .time-block{
+    display:flex;
+    flex-direction:column;
+    align-items:flex-end;
+    gap:0.15rem;
+  }
+  .time-label{
+    font-size:clamp(0.68rem, 0.85vw, 0.8rem);
+    letter-spacing:0.1em;
+    text-transform:uppercase;
+    color:var(--text-dim);
+    font-weight:700;
+  }
+  .time-value{
+    font-family:'Fredoka', sans-serif;
+    font-weight:600;
+    font-size:clamp(2.1rem, 4.6vw, 3.4rem);
     line-height:1;
     font-variant-numeric:tabular-nums;
     text-align:right;
     white-space:nowrap;
   }
-  .clock small{
-    font-size:0.38em;
+  .time-value small{
+    font-size:0.36em;
     color:var(--text-mid);
-    margin-left:0.3rem;
+    margin-left:0.25rem;
     font-family:'Quicksand', sans-serif;
     font-weight:700;
   }
@@ -101,15 +155,14 @@
   .countdown{
     background:var(--surface);
     border:1px solid var(--hairline);
-    border-radius:28px;
-    padding:clamp(1.2rem, 2.4vw, 2rem) clamp(1.4rem, 3vw, 2.6rem);
+    border-radius:24px;
+    padding:clamp(0.6rem, 1.2vw, 1rem);
     display:flex;
-    flex-wrap:wrap;
     align-items:center;
     justify-content:center;
-    gap:clamp(1.2rem, 3vw, 2.6rem);
     position:relative;
     transition:border-color 0.4s ease;
+    flex:0 0 auto;
   }
   .countdown.state-warn{border-color:color-mix(in srgb, var(--warn) 55%, var(--hairline));}
   .countdown.state-crit{border-color:color-mix(in srgb, var(--crit) 65%, var(--hairline)); animation:pulseBorder 1.6s ease-in-out infinite;}
@@ -118,31 +171,10 @@
     50%{box-shadow:0 0 0 8px rgba(255,111,111,0.08);}
   }
 
-  .countdown-label{
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    gap:0.3rem;
-    flex:1 1 140px;
-    text-align:center;
-  }
-  .countdown-label .eyebrow{
-    font-size:clamp(0.78rem, 1vw, 0.95rem);
-    letter-spacing:0.12em;
-    text-transform:uppercase;
-    color:var(--text-mid);
-    font-weight:700;
-  }
-  .countdown-label .dest{
-    font-family:'Fredoka', sans-serif;
-    font-size:clamp(1.15rem, 1.7vw, 1.5rem);
-    font-weight:500;
-  }
-
   .dial-wrap{
     position:relative;
-    width:clamp(200px, 24vw, 300px);
-    height:clamp(200px, 24vw, 300px);
+    width:clamp(130px, 15vw, 190px);
+    height:clamp(130px, 15vw, 190px);
     flex:0 0 auto;
   }
   .dial-face{
@@ -183,49 +215,18 @@
   .dial-time{
     font-family:'Fredoka', sans-serif;
     font-weight:600;
-    font-size:clamp(2rem, 4.6vw, 3.1rem);
+    font-size:clamp(1.3rem, 2.6vw, 1.9rem);
     font-variant-numeric:tabular-nums;
     color:var(--text-hi);
     line-height:1;
   }
   .track-caption{
-    font-size:clamp(0.72rem, 0.95vw, 0.85rem);
+    font-size:clamp(0.6rem, 0.75vw, 0.7rem);
     color:var(--text-mid);
     font-weight:700;
     text-transform:uppercase;
     letter-spacing:0.06em;
     max-width:70%;
-  }
-
-  .leave-time-adjust{
-    flex:1 1 140px;
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    gap:0.3rem;
-  }
-  .leave-time-adjust label{
-    font-size:0.72rem;
-    letter-spacing:0.1em;
-    text-transform:uppercase;
-    color:var(--text-dim);
-    font-weight:700;
-  }
-  .leave-time-adjust input{
-    background:var(--bg-deep);
-    border:1px solid var(--hairline);
-    border-radius:10px;
-    color:var(--text-hi);
-    font-family:'Quicksand', sans-serif;
-    font-weight:700;
-    font-size:0.95rem;
-    padding:0.35rem 0.5rem;
-    accent-color:var(--sun);
-  }
-  .leave-time-adjust input:focus-visible{outline:2px solid var(--sun); outline-offset:2px;}
-  .leave-time-adjust .hint{
-    font-size:0.68rem;
-    color:var(--text-dim);
   }
 
   /* ---- tasks ---- */
@@ -234,19 +235,20 @@
     justify-content:space-between;
     align-items:baseline;
     gap:1rem;
+    flex:0 0 auto;
   }
   .tasks-title{
     font-family:'Fredoka', sans-serif;
     font-weight:600;
-    font-size:clamp(1.3rem, 2vw, 1.8rem);
+    font-size:clamp(1rem, 1.5vw, 1.3rem);
     margin:0;
   }
   .tasks-progress-chip{
     background:var(--surface-hi);
     border-radius:999px;
-    padding:0.4rem 1rem;
+    padding:0.3rem 0.8rem;
     font-weight:700;
-    font-size:clamp(0.85rem, 1.1vw, 1rem);
+    font-size:clamp(0.75rem, 0.95vw, 0.88rem);
     color:var(--sun-soft);
     font-variant-numeric:tabular-nums;
     white-space:nowrap;
@@ -254,31 +256,32 @@
 
   .kids-grid{
     display:grid;
-    grid-template-columns:repeat(auto-fit, minmax(260px, 1fr));
-    gap:clamp(0.9rem, 1.6vw, 1.4rem);
+    grid-template-columns:repeat(auto-fit, minmax(220px, 1fr));
+    gap:clamp(0.6rem, 1.1vw, 1rem);
     flex:1 1 auto;
+    min-height:0;
   }
 
   .kid-card{
     background:var(--surface);
     border:1px solid var(--hairline);
-    border-radius:24px;
-    padding:clamp(1rem, 1.6vw, 1.4rem);
+    border-radius:18px;
+    padding:clamp(0.6rem, 1vw, 0.9rem);
     display:flex;
     flex-direction:column;
-    gap:clamp(0.6rem, 1vw, 0.9rem);
+    gap:clamp(0.3rem, 0.55vw, 0.5rem);
   }
 
   .kid-header{
     display:flex;
     align-items:center;
-    gap:0.8rem;
+    gap:0.55rem;
     border-bottom:1px solid var(--hairline);
-    padding-bottom:clamp(0.6rem, 1vw, 0.9rem);
+    padding-bottom:clamp(0.35rem, 0.6vw, 0.55rem);
   }
   .kid-avatar{
-    width:clamp(40px, 4.5vw, 52px);
-    height:clamp(40px, 4.5vw, 52px);
+    width:clamp(28px, 3vw, 36px);
+    height:clamp(28px, 3vw, 36px);
     border-radius:50%;
     flex:0 0 auto;
     display:flex;
@@ -286,36 +289,46 @@
     justify-content:center;
     font-family:'Fredoka', sans-serif;
     font-weight:600;
-    font-size:clamp(1.1rem, 1.6vw, 1.4rem);
+    font-size:clamp(0.85rem, 1.05vw, 1rem);
     color:var(--bg-deep);
   }
   .kid-name{
     font-family:'Fredoka', sans-serif;
     font-weight:600;
-    font-size:clamp(1.15rem, 1.7vw, 1.45rem);
+    font-size:clamp(0.92rem, 1.15vw, 1.08rem);
     flex:1 1 auto;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
   }
+  .kid-medal{
+    font-size:clamp(0.95rem, 1.2vw, 1.15rem);
+    line-height:1;
+    flex:0 0 auto;
+  }
+  .kid-medal:empty{display:none;}
   .kid-progress{
     font-weight:700;
-    font-size:clamp(0.8rem, 1vw, 0.92rem);
+    font-size:clamp(0.68rem, 0.85vw, 0.78rem);
     color:var(--text-dim);
     font-variant-numeric:tabular-nums;
     white-space:nowrap;
+    flex:0 0 auto;
   }
   .kid-progress.all-done{color:var(--calm);}
 
   .kid-tasklist{
     display:flex;
     flex-direction:column;
-    gap:clamp(0.4rem, 0.8vw, 0.6rem);
+    gap:clamp(0.1rem, 0.25vw, 0.2rem);
   }
 
   .task-row{
     display:flex;
     align-items:center;
-    gap:0.75rem;
-    padding:clamp(0.55rem, 1vw, 0.75rem) clamp(0.6rem, 1vw, 0.8rem);
-    border-radius:14px;
+    gap:0.55rem;
+    padding:clamp(0.25rem, 0.5vw, 0.38rem) clamp(0.35rem, 0.6vw, 0.5rem);
+    border-radius:10px;
     cursor:pointer;
     -webkit-tap-highlight-color:transparent;
     user-select:none;
@@ -326,9 +339,9 @@
   .task-row:focus-visible{outline:3px solid var(--sun); outline-offset:2px;}
 
   .task-checkbox{
-    width:clamp(24px, 2.6vw, 30px);
-    height:clamp(24px, 2.6vw, 30px);
-    border-radius:8px;
+    width:clamp(18px, 1.9vw, 22px);
+    height:clamp(18px, 1.9vw, 22px);
+    border-radius:6px;
     border:2px solid var(--hairline);
     background:var(--bg-deep);
     flex:0 0 auto;
@@ -351,16 +364,19 @@
 
   .kid-empty{
     color:var(--text-dim);
-    font-size:0.9rem;
-    padding:0.4rem 0.2rem;
+    font-size:0.82rem;
+    padding:0.3rem 0.2rem;
   }
 
   .task-label{
     font-family:'Quicksand', sans-serif;
     font-weight:600;
-    font-size:clamp(0.95rem, 1.2vw, 1.1rem);
+    font-size:clamp(0.8rem, 1vw, 0.92rem);
     transition:color 0.3s ease, opacity 0.3s ease;
     flex:1 1 auto;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
   }
 
   .task-row.done .task-checkbox{background:var(--calm); border-color:var(--calm);}
@@ -379,20 +395,19 @@
     text-align:center;
     font-family:'Fredoka', sans-serif;
     font-weight:500;
-    font-size:clamp(1.1rem, 1.8vw, 1.5rem);
-    padding:0.9rem 1rem;
-    border-radius:18px;
+    font-size:clamp(0.85rem, 1.3vw, 1.1rem);
+    padding:0.55rem 1rem;
+    border-radius:14px;
     background:var(--surface-hi);
     color:var(--sun-soft);
     transition:background 0.4s ease, color 0.4s ease;
+    flex:0 0 auto;
   }
   .banner.ready{background:color-mix(in srgb, var(--calm) 22%, var(--surface-hi)); color:var(--calm);}
   .banner.crit{background:color-mix(in srgb, var(--crit) 20%, var(--surface-hi)); color:#ffb3b3;}
 
   .conn-pill{
-    position:absolute;
-    top:10px;
-    right:16px;
+    align-self:flex-end;
     font-size:0.68rem;
     font-weight:700;
     letter-spacing:0.06em;
@@ -405,9 +420,9 @@
 
   @media (max-width: 640px){
     .topbar{flex-direction:column; align-items:flex-start;}
-    .clock{text-align:left;}
-    .countdown{flex-wrap:wrap;}
-    .leave-time-adjust{align-items:center;}
+    .time-pair{align-self:flex-start;}
+    .time-block{align-items:flex-start;}
+    .time-value{text-align:left;}
   }
 
   @media (prefers-reduced-motion: reduce){
@@ -420,21 +435,33 @@
 <body>
 
 <div class="stage">
-  <span class="conn-pill" id="connPill">Waiting for phone…</span>
   <div class="topbar">
     <div>
       <p class="greeting-eyebrow">Rise and shine</p>
       <h1 class="greeting" id="greeting">Good morning, crew!</h1>
       <p class="date-line" id="dateLine">&nbsp;</p>
+      <div class="word-of-day">
+        <span class="wod-label">Word of the day</span>
+        <span class="wod-word" id="wodWord">—</span>
+        <span class="wod-def" id="wodDef"></span>
+      </div>
     </div>
-    <div class="clock" id="clock">--:-- <small>--</small></div>
+    <div class="topbar-right">
+      <span class="conn-pill" id="connPill">Waiting for phone…</span>
+      <div class="time-pair">
+        <div class="time-block">
+          <span class="time-label">Current time</span>
+          <div class="time-value" id="clock">--:-- <small>--</small></div>
+        </div>
+        <div class="time-block">
+          <span class="time-label">Leave time</span>
+          <div class="time-value" id="leaveClock">--:-- <small>--</small></div>
+        </div>
+      </div>
+    </div>
   </div>
 
   <div class="countdown" id="countdownBand">
-    <div class="countdown-label">
-      <span class="eyebrow">Leaving for</span>
-      <span class="dest">School bus stop</span>
-    </div>
     <div class="dial-wrap">
       <svg class="dial-face" viewBox="0 0 200 200" aria-hidden="true">
         <circle class="dial-ring" cx="100" cy="100" r="92"></circle>
@@ -444,13 +471,8 @@
       </svg>
       <div class="dial-center">
         <div class="dial-time" id="countdownTime">--:--</div>
-        <span class="track-caption" id="trackCaption">until leaving</span>
+        <span class="track-caption" id="trackCaption">until the bus</span>
       </div>
-    </div>
-    <div class="leave-time-adjust">
-      <label for="leaveTimeInput">Leave time</label>
-      <input type="time" id="leaveTimeInput" disabled />
-      <span class="hint">set from the phone app</span>
     </div>
   </div>
 
@@ -492,6 +514,9 @@
   var kidsGrid = document.getElementById('kidsGrid');
   var rowRefs = {};
   var progressRefs = {};
+  var medalRefs = {};
+  var finishOrder = []; // kidIds in the order they first completed every task — drives medals
+  var MEDALS = ['🥇','🥈','🥉'];
 
   function escapeHtml(str){
     var div = document.createElement('div');
@@ -506,6 +531,8 @@
     kidsGrid.innerHTML = '';
     rowRefs = {};
     progressRefs = {};
+    medalRefs = {};
+    finishOrder = [];
 
     kidsConfig.forEach(function(kid){
       rowRefs[kid.id] = {};
@@ -518,12 +545,14 @@
       header.className = 'kid-header';
       header.innerHTML =
         '<div class="kid-avatar" style="background:' + color + '">' + escapeHtml((kid.name || '?').charAt(0)) + '</div>' +
-        '<div class="kid-name">' + escapeHtml(kid.name) + '</div>';
+        '<div class="kid-name">' + escapeHtml(kid.name) + '</div>' +
+        '<span class="kid-medal"></span>';
       var progressEl = document.createElement('div');
       progressEl.className = 'kid-progress';
       header.appendChild(progressEl);
       card.appendChild(header);
       progressRefs[kid.id] = progressEl;
+      medalRefs[kid.id] = header.querySelector('.kid-medal');
 
       var list = document.createElement('div');
       list.className = 'kid-tasklist';
@@ -608,6 +637,27 @@
     progressEl.classList.toggle('all-done', tasks.length > 0 && count === tasks.length);
   }
 
+  // first kid to finish every task gets gold, second gets silver, third bronze —
+  // a kid drops off the podium if a task gets unchecked again
+  function updateMedals(){
+    finishOrder = finishOrder.filter(function(kidId){
+      var kid = currentKids.filter(function(k){ return k.id === kidId; })[0];
+      return !!(kid && kid.tasks && kid.tasks.length > 0 && kid.tasks.every(function(t){ return t.done; }));
+    });
+    currentKids.forEach(function(kid){
+      var allDone = kid.tasks && kid.tasks.length > 0 && kid.tasks.every(function(t){ return t.done; });
+      if(allDone && finishOrder.indexOf(kid.id) === -1){
+        finishOrder.push(kid.id);
+      }
+    });
+    currentKids.forEach(function(kid){
+      var medalEl = medalRefs[kid.id];
+      if(!medalEl) return;
+      var rank = finishOrder.indexOf(kid.id);
+      medalEl.textContent = (rank >= 0 && rank < MEDALS.length) ? MEDALS[rank] : '';
+    });
+  }
+
   var progressChip = document.getElementById('progressChip');
   var banner = document.getElementById('banner');
   function totalDoneCount(){
@@ -618,6 +668,7 @@
     return { done: doneCount, total: total };
   }
   function updateProgress(){
+    updateMedals();
     var counts = totalDoneCount();
     progressChip.textContent = counts.done + ' of ' + counts.total + ' done';
     if(counts.total > 0 && counts.done === counts.total){
@@ -634,6 +685,7 @@
 
   // ---- clock ----
   var clockEl = document.getElementById('clock');
+  var leaveClockEl = document.getElementById('leaveClock');
   var dateLine = document.getElementById('dateLine');
   var greeting = document.getElementById('greeting');
   var days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
@@ -641,19 +693,71 @@
 
   function pad(n){ return n < 10 ? '0' + n : '' + n; }
 
-  function renderClock(now){
-    var h = now.getHours();
-    var m = now.getMinutes();
+  function formatClock(d){
+    var h = d.getHours();
+    var m = d.getMinutes();
     var ampm = h >= 12 ? 'PM' : 'AM';
     var h12 = h % 12; if(h12 === 0) h12 = 12;
-    clockEl.innerHTML = h12 + ':' + pad(m) + ' <small>' + ampm + '</small>';
-    dateLine.textContent = days[now.getDay()] + ', ' + months[now.getMonth()] + ' ' + now.getDate();
+    return h12 + ':' + pad(m) + ' <small>' + ampm + '</small>';
+  }
+
+  function renderClock(now){
+    var h = now.getHours();
+    clockEl.innerHTML = formatClock(now);
+    dateLine.textContent = days[now.getDay()] + ', ' + months[now.getMonth()] + ' ' + now.getDate() + ', ' + now.getFullYear();
     if(h < 10) greeting.textContent = 'Good morning, crew!';
     else greeting.textContent = "Let's get moving!";
   }
 
+  // ---- word of the day ----
+  var WORD_LIST = [
+    { word:'Luminous', def:'full of light; glowing brightly' },
+    { word:'Curious', def:'eager to learn or find out more' },
+    { word:'Fortitude', def:'courage in facing pain or hardship' },
+    { word:'Whimsical', def:'playfully quirky or fanciful' },
+    { word:'Diligent', def:'showing care and effort in your work' },
+    { word:'Serene', def:'calm, peaceful, and untroubled' },
+    { word:'Vivid', def:'producing bright, clear images' },
+    { word:'Resilient', def:'able to bounce back from difficulty' },
+    { word:'Peculiar', def:'strange or unusual' },
+    { word:'Radiant', def:'shining brightly; glowing with joy' },
+    { word:'Bashful', def:'shy or easily embarrassed' },
+    { word:'Nimble', def:'quick and light in movement' },
+    { word:'Jubilant', def:'feeling great happiness and triumph' },
+    { word:'Meticulous', def:'very careful and precise' },
+    { word:'Mysterious', def:'difficult to understand or explain' },
+    { word:'Gigantic', def:'extremely large; huge' },
+    { word:'Marvelous', def:'causing great wonder; excellent' },
+    { word:'Ambitious', def:'having a strong desire to succeed' },
+    { word:'Cheerful', def:'noticeably happy and positive' },
+    { word:'Brilliant', def:'exceptionally clever or talented' },
+    { word:'Courageous', def:'brave; not afraid of danger' },
+    { word:'Generous', def:'willing to give more than expected' },
+    { word:'Humble', def:'not thinking too highly of yourself' },
+    { word:'Inventive', def:'good at creating new things or ideas' },
+    { word:'Joyful', def:'feeling or showing great happiness' },
+    { word:'Keen', def:'having a sharp, eager mind' },
+    { word:'Lively', def:'full of energy and enthusiasm' },
+    { word:'Noble', def:'having fine, honorable qualities' },
+    { word:'Optimistic', def:'hopeful and confident about the future' },
+    { word:'Playful', def:'full of fun and good humor' }
+  ];
+  var wodWordEl = document.getElementById('wodWord');
+  var wodDefEl = document.getElementById('wodDef');
+  var lastWordDateKey = '';
+
+  function updateWordOfDay(now){
+    var dateKey = now.getFullYear() + '-' + now.getMonth() + '-' + now.getDate();
+    if(dateKey === lastWordDateKey) return;
+    lastWordDateKey = dateKey;
+    var start = new Date(now.getFullYear(), 0, 0);
+    var dayOfYear = Math.floor((now - start) / 86400000);
+    var entry = WORD_LIST[dayOfYear % WORD_LIST.length];
+    wodWordEl.textContent = entry.word;
+    wodDefEl.textContent = '— ' + entry.def;
+  }
+
   // ---- countdown dial ----
-  var leaveInput = document.getElementById('leaveTimeInput');
   var countdownBand = document.getElementById('countdownBand');
   var countdownTime = document.getElementById('countdownTime');
   var dialWedge = document.getElementById('dialWedge');
@@ -708,7 +812,7 @@
   function setLeaveTime(d, now, explicitTotalMs){
     leaveTime = d;
     totalMs = explicitTotalMs || Math.max(1, leaveTime.getTime() - now.getTime());
-    leaveInput.value = pad(leaveTime.getHours()) + ':' + pad(leaveTime.getMinutes());
+    leaveClockEl.innerHTML = formatClock(leaveTime);
   }
 
   setLeaveTime(defaultLeave(new Date()), new Date());
@@ -725,6 +829,7 @@
   function tick(){
     var now = new Date();
     renderClock(now);
+    updateWordOfDay(now);
     var remaining = leaveTime.getTime() - now.getTime();
     if(remaining <= 0){
       countdownTime.textContent = "It's time!";
@@ -738,7 +843,7 @@
       var mins = remaining / 60000;
       var state = mins <= 5 ? 'state-crit' : (mins <= 15 ? 'state-warn' : '');
       countdownBand.className = 'countdown ' + state;
-      trackCaption.textContent = 'until leaving';
+      trackCaption.textContent = 'until the bus';
     }
     var counts = totalDoneCount();
     if(remaining <= 0 && counts.done < counts.total){
