@@ -446,22 +446,6 @@
     100%{transform:scale(1);}
   }
 
-  /* ---- footer banner ---- */
-  .banner{
-    text-align:center;
-    font-family:'Fredoka', sans-serif;
-    font-weight:500;
-    font-size:clamp(0.85rem, 1.3vw, 1.1rem);
-    padding:0.55rem 1rem;
-    border-radius:14px;
-    background:var(--surface-hi);
-    color:var(--sun-soft);
-    transition:background 0.4s ease, color 0.4s ease;
-    flex:0 0 auto;
-  }
-  .banner.ready{background:color-mix(in srgb, var(--calm) 22%, var(--surface-hi)); color:var(--calm);}
-  .banner.crit{background:color-mix(in srgb, var(--crit) 20%, var(--surface-hi)); color:#ffb3b3;}
-
   .conn-pill{
     align-self:flex-end;
     font-size:0.68rem;
@@ -554,8 +538,6 @@
   </div>
 
   <div class="kids-grid" id="kidsGrid"></div>
-
-  <div class="banner" id="banner">Waiting for the Morning Launchpad app to connect…</div>
 </div>
 
 <script>
@@ -762,7 +744,6 @@
   }
 
   var progressChip = document.getElementById('progressChip');
-  var banner = document.getElementById('banner');
   function totalDoneCount(){
     var doneCount = 0, total = 0;
     currentKids.forEach(function(kid){
@@ -774,14 +755,6 @@
     updateMedals();
     var counts = totalDoneCount();
     progressChip.textContent = counts.done + ' of ' + counts.total + ' done';
-    if(counts.total > 0 && counts.done === counts.total){
-      banner.textContent = "Everyone's ready — nice work! ✨";
-      banner.className = 'banner ready';
-    } else {
-      banner.className = 'banner';
-      var remaining = counts.total - counts.done;
-      banner.textContent = remaining + ' task' + (remaining === 1 ? '' : 's') + ' left to check off';
-    }
   }
 
   renderDashboard(defaultKids());
@@ -997,14 +970,6 @@
       var state = mins <= 5 ? 'state-crit' : (mins <= 15 ? 'state-warn' : '');
       countdownBand.className = 'countdown ' + state;
       trackCaption.textContent = 'until the bus';
-    }
-    var counts = totalDoneCount();
-    if(remaining <= 0 && counts.done < counts.total){
-      banner.className = 'banner crit';
-      banner.textContent = "Time to go — finish up on the way!";
-    } else if(counts.total > 0 && counts.done === counts.total){
-      banner.className = 'banner ready';
-      banner.textContent = "Everyone's ready — nice work! ✨";
     }
   }
 
