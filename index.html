@@ -237,7 +237,6 @@
   }
   .countdown.state-warn .dial-wedge{fill:var(--warn);}
   .countdown.state-crit .dial-wedge{fill:var(--crit);}
-  .dial-hub{fill:var(--text-hi);}
 
   .dial-center{
     position:absolute;
@@ -528,7 +527,6 @@
           <circle class="dial-ring" cx="100" cy="100" r="92"></circle>
           <g class="dial-ticks" id="dialTicks"></g>
           <path class="dial-wedge" id="dialWedge" d=""></path>
-          <circle class="dial-hub" cx="100" cy="100" r="4"></circle>
         </svg>
         <div class="dial-center">
           <div class="dial-time" id="countdownTime">--:--</div>
@@ -797,16 +795,20 @@
 
   function pad(n){ return n < 10 ? '0' + n : '' + n; }
 
-  function formatClock(d){
+  // every field is zero-padded to a fixed width (e.g. "09" not "9") so the string
+  // length never changes and the digits don't visibly shift position each tick
+  function formatClock(d, includeSeconds){
     var h = d.getHours();
     var m = d.getMinutes();
     var ampm = h >= 12 ? 'PM' : 'AM';
     var h12 = h % 12; if(h12 === 0) h12 = 12;
-    return h12 + ':' + pad(m) + ' <small>' + ampm + '</small>';
+    var timeStr = pad(h12) + ':' + pad(m);
+    if(includeSeconds) timeStr += ':' + pad(d.getSeconds());
+    return timeStr + ' <small>' + ampm + '</small>';
   }
 
   function renderClock(now){
-    clockEl.innerHTML = formatClock(now);
+    clockEl.innerHTML = formatClock(now, true);
     dateLine.textContent = days[now.getDay()] + ', ' + months[now.getMonth()] + ' ' + now.getDate() + ', ' + now.getFullYear();
   }
 
@@ -970,8 +972,10 @@
     var h = Math.floor(totalSec / 3600);
     var m = Math.floor((totalSec % 3600) / 60);
     var s = totalSec % 60;
-    if(h > 0) return h + ':' + pad(m) + ':' + pad(s);
-    return m + ':' + pad(s);
+    // minutes (and hours, once past the 1-hour mark) are zero-padded too, so the
+    // digits hold their position instead of the whole number narrowing/widening
+    if(h > 0) return pad(h) + ':' + pad(m) + ':' + pad(s);
+    return pad(m) + ':' + pad(s);
   }
 
   function tick(){
